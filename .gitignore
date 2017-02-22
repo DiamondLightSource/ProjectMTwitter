@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# twitter credentials
+credentials.json
+
+# gedit 
+*~
+
 # Distribution / packaging
 .Python
 env/
