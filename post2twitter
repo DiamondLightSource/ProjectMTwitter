@@ -1,2 +1,2 @@
-/dls_sw/apps/ProjectMTwitter/python/miniconda/bin/python /dls_sw/apps/ProjectMTwitter/ProjectMTwitter/src/post2twitter.py $@
+/dls_sw/apps/ProjectMTwitter/python/miniconda/bin/python /dls_sw/apps/ProjectMTwitter/ProjectMTwitter/src/post2twitter.py -c /dls_sw/apps/ProjectMTwitter/ProjectMTwitter/creds $@
 
