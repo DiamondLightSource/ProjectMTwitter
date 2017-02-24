@@ -1,6 +1,5 @@
 # Gather command line arguments
 import optparse
-import mysql.connector
 
 usage = "%prog [options] sample_barcode data_file"
 version = "%prog 0.1"
@@ -97,14 +96,24 @@ plt.ylabel('Intensity')
 logging.info("Saving '%s'" % (fig4_file_name))
 pl.savefig(fig4_file_name, bbox_inches='tight')
 
+
 # Connect to DB
-conn = mysql.connector.connect(user='user', password='pw', host='host', database='db', port=int('port'))
+logging.info("Connecting to ISPyB")
+import mysql.connector
+
+conn = mysql.connector.connect(user=creds['ispyb_user'], 
+                               password=creds['ispyb_pw'], 
+                               host=creds['ispyb_host'], 
+                               database=creds['ispyb_db'], 
+                               port=int(creds['ispyb_port']))
+
 if conn is not None:
     conn.autocommit=True
-cursor = self.conn.cursor(dictionary=True)
+
+cursor = conn.cursor(dictionary=True, buffered=True)
 
 # Retrieve the school name for the given sample barcode
-barcode = sys.argv[-2]
+barcode = args[0]
 query = """SELECT lab.name 
 FROM Laboratory lab 
   INNER JOIN Person p on p.laboratoryId = lab.laboratoryId
@@ -114,14 +123,16 @@ FROM Laboratory lab
   INNER JOIN Container c on c.dewarId = d.dewarId
   INNER JOIN BLSample bls on bls.containerId = c.containerId
 WHERE
-  bls.name = %s"""
+  bls.name = %s""" % (barcode)
 
-cursor.execute(query, barcode)
+cursor.execute(query)
+
 rs = cursor.fetchone()
 if len(rs) == 0:
-    logging.error("Couldn't find a school for sample barcode %s" % barcode)
+    logging.warn("Couldn't find a school for sample barcode %s" % barcode)
 
-school = rs.iteritems().next()[1]
+print(rs)
+school = rs['name']
 cursor.close()
 conn.close()
 
@@ -130,7 +141,7 @@ conn.close()
 
 # Post the update to twitter
 logging.info("Posting update to twitter")
-status = api.PostUpdate('Data collection test 1/... for @basham_mark',
+status = api.PostUpdate('Data collection test 1/... for %s' % school,
                         media=[fig1_file_name,
                                fig2_file_name,
                                fig3_file_name,
