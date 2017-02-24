@@ -1,4 +1,4 @@
 python-twitter
 numpy
 matplotlib
-
+mysql.connector
