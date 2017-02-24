@@ -1,5 +1,6 @@
 # Gather command line arguments
 import optparse
+import mysql.connector
 
 usage = "%prog [options] sample_barcode data_file"
 version = "%prog 0.1"
@@ -95,6 +96,36 @@ plt.plot(a[0][2000:3000],a[1][2000:3000])
 plt.ylabel('Intensity')
 logging.info("Saving '%s'" % (fig4_file_name))
 pl.savefig(fig4_file_name, bbox_inches='tight')
+
+# Connect to DB
+conn = mysql.connector.connect(user='user', password='pw', host='host', database='db', port=int('port'))
+if conn is not None:
+    conn.autocommit=True
+cursor = self.conn.cursor(dictionary=True)
+
+# Retrieve the school name for the given sample barcode
+barcode = sys.argv[-2]
+query = """SELECT lab.name 
+FROM Laboratory lab 
+  INNER JOIN Person p on p.laboratoryId = lab.laboratoryId
+  INNER JOIN LabContact lc on lc.personId = p.personId
+  INNER JOIN Shipping s on s.returnLabContactId = lc.labContactId
+  INNER JOIN Dewar d on d.shippingId = s.shippingId
+  INNER JOIN Container c on c.dewarId = d.dewarId
+  INNER JOIN BLSample bls on bls.containerId = c.containerId
+WHERE
+  bls.name = %s"""
+
+cursor.execute(query, barcode)
+rs = cursor.fetchone()
+if len(rs) == 0:
+    logging.error("Couldn't find a school for sample barcode %s" % barcode)
+
+school = rs.iteritems().next()[1]
+cursor.close()
+conn.close()
+
+# Look-up the twitter handle for the school 
 
 
 # Post the update to twitter
