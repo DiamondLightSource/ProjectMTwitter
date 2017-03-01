@@ -13,6 +13,9 @@ parser.add_option("-p", "--syslog_port", dest="syslog_port",
                   help="Port to connect to syslog server on", default=514)
 parser.add_option("-c", "--credentials", dest="credential_dir",
                   help="Directory containing credentials for twitter etc", default="creds")
+parser.add_option("-l", "--twitter_lookup", dest="twitter_lookup",
+                  help="Directory containing credentials for twitter etc",
+                  default="test_data/twitter_lookup.csv")
 
 (options, args) = parser.parse_args()
 
@@ -131,17 +134,26 @@ rs = cursor.fetchone()
 if len(rs) == 0:
     logging.warn("Couldn't find a school for sample barcode %s" % barcode)
 
-print(rs)
 school = rs['name']
+logging.info("School identified as '%s'" % school)
 cursor.close()
 conn.close()
 
+
 # Look-up the twitter handle for the school 
+from numpy import genfromtxt
+logging.info("Loading twitter lookup table from '%s'" % options.twitter_lookup)
+tl = genfromtxt(options.twitter_lookup, delimiter=',', dtype=None)
+
+names = [i[0].decode('UTF-8') for i in tl]
+match = tl[[school.lower() in name.lower() for name in names]][0]
+twitter_handle = match[1].decode('UTF-8') if match[1].decode('UTF-8').startswith('@') else match[0].decode('UTF-8') + ' school'
+logging.info("Twitter handle identified as '%s'" % twitter_handle)
 
 
 # Post the update to twitter
 logging.info("Posting update to twitter")
-status = api.PostUpdate('Data collection test 1/... for %s' % school,
+status = api.PostUpdate('Data collection test 1/... for %stesting' % twitter_handle,
                         media=[fig1_file_name,
                                fig2_file_name,
                                fig3_file_name,
