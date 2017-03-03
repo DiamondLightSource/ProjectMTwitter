@@ -1,7 +1,7 @@
 # Gather command line arguments
 import optparse
 
-usage = "%prog [options] sample_barcode data_file"
+usage = "%prog [options] sample_barcode data_file sample_image"
 version = "%prog 0.1"
 parser = optparse.OptionParser(usage=usage, version=version)
 parser.add_option("-t", "--tmp", dest="temp_dir",
@@ -91,13 +91,13 @@ plt.ylabel('Intensity')
 logging.info("Saving '%s'" % (fig3_file_name))
 pl.savefig(fig3_file_name, bbox_inches='tight')
 
-fig4_file_name = os.path.join(options.temp_dir, 'pic4.png')
-logging.info("Preparing '%s'" % (fig4_file_name))
-plt.close()
-plt.plot(a[0][2000:3000],a[1][2000:3000])
-plt.ylabel('Intensity')
-logging.info("Saving '%s'" % (fig4_file_name))
-pl.savefig(fig4_file_name, bbox_inches='tight')
+#fig4_file_name = os.path.join(options.temp_dir, 'pic4.png')
+#logging.info("Preparing '%s'" % (fig4_file_name))
+#plt.close()
+#plt.plot(a[0][2000:3000],a[1][2000:3000])
+#plt.ylabel('Intensity')
+#logging.info("Saving '%s'" % (fig4_file_name))
+#pl.savefig(fig4_file_name, bbox_inches='tight')
 
 
 # Connect to DB
@@ -150,13 +150,21 @@ match = tl[[school.lower() in name.lower() for name in names]][0]
 twitter_handle = match[1].decode('UTF-8') if match[1].decode('UTF-8').startswith('@') else match[0].decode('UTF-8') + ' school'
 logging.info("Twitter handle identified as '%s'" % twitter_handle)
 
+image_list = [fig1_file_name,
+              fig2_file_name,
+              fig3_file_name]
+if len(args) > 2:
+    image_list.append(args[2])
+
+logging.info("Image list before checks is : " + str(image_list))
+
+image_list = [file_name for file_name in image_list if os.path.exists(file_name)]
+logging.info("Image list after checks is : " + str(image_list))
+
 
 # Post the update to twitter
 logging.info("Posting update to twitter")
 status = api.PostUpdate('Data collection test 1/... for %stesting' % twitter_handle,
-                        media=[fig1_file_name,
-                               fig2_file_name,
-                               fig3_file_name,
-                               fig4_file_name])
+                        media=image_list)
 
 
