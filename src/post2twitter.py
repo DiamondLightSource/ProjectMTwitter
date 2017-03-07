@@ -146,8 +146,11 @@ logging.info("Loading twitter lookup table from '%s'" % options.twitter_lookup)
 tl = genfromtxt(options.twitter_lookup, delimiter=',', dtype=None)
 
 names = [i[0].decode('UTF-8') for i in tl]
-match = tl[[school.lower() in name.lower() for name in names]][0]
-twitter_handle = match[1].decode('UTF-8') if match[1].decode('UTF-8').startswith('@') else match[0].decode('UTF-8') + ' school'
+matches = tl[[school.lower() in name.lower() for name in names]]
+twitter_handle = school + " School"
+if len(matches) > 0:
+    match = matches[0]
+    twitter_handle = match[1].decode('UTF-8') if match[1].decode('UTF-8').startswith('@') else match[0].decode('UTF-8') + ' school'
 logging.info("Twitter handle identified as '%s'" % twitter_handle)
 
 image_list = [fig1_file_name,
