@@ -70,9 +70,11 @@ import matplotlib.pyplot as plt
 fig1_file_name = os.path.join(options.temp_dir, 'pic1.png')
 logging.info("Preparing '%s'" % (fig1_file_name))
 plt.close()
-plt.plot(a[0][100:7000],a[1][100:7000])
+plt.plot(a[0],a[1])
+#FIXME add school content to the plot image
+plt.title('Data from sample ...')
 plt.ylabel('Intensity')
-plt.xlabel('$2\theta$(degrees)')
+plt.xlabel(r'$2\theta$(degrees)')
 logging.info("Saving '%s'" % (fig1_file_name))
 pl.savefig(fig1_file_name, bbox_inches='tight')
 
@@ -140,10 +142,12 @@ logging.info("Image list before checks is : " + str(image_list))
 image_list = [file_name for file_name in image_list if os.path.exists(file_name)]
 logging.info("Image list after checks is : " + str(image_list))
 
+#FIXME make this a json stored incrementing value
+experiment_count = 23 
 
 # Post the update to twitter
 logging.info("Posting update to twitter")
-status = api.PostUpdate('Data collection test 1/... for %stesting' % twitter_handle,
+status = api.PostUpdate('Experiment %i completed for %s_test as part of @DLSProjectM_test on the #I11 beamline @DiamondLightSou_test' % (experiment_count, twitter_handle),
                         media=image_list)
 
 
