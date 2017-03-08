@@ -1,7 +1,7 @@
 # Gather command line arguments
 import optparse
 
-usage = "%prog [options] sample_barcode data_file sample_image"
+usage = "%prog [options] sample_barcode data_file sample_images .."
 version = "%prog 0.1"
 parser = optparse.OptionParser(usage=usage, version=version)
 parser.add_option("-t", "--tmp", dest="temp_dir",
@@ -72,32 +72,9 @@ logging.info("Preparing '%s'" % (fig1_file_name))
 plt.close()
 plt.plot(a[0][100:7000],a[1][100:7000])
 plt.ylabel('Intensity')
+plt.xlabel('$2\theta$(degrees)')
 logging.info("Saving '%s'" % (fig1_file_name))
 pl.savefig(fig1_file_name, bbox_inches='tight')
-
-fig2_file_name = os.path.join(options.temp_dir, 'pic2.png')
-logging.info("Preparing '%s'" % (fig2_file_name))
-plt.close()
-plt.plot(a[0][100:1000],a[1][100:1000])
-plt.ylabel('Intensity')
-logging.info("Saving '%s'" % (fig2_file_name))
-pl.savefig(fig2_file_name, bbox_inches='tight')
-
-fig3_file_name = os.path.join(options.temp_dir, 'pic3.png')
-logging.info("Preparing '%s'" % (fig3_file_name))
-plt.close()
-plt.plot(a[0][1000:2000],a[1][1000:2000])
-plt.ylabel('Intensity')
-logging.info("Saving '%s'" % (fig3_file_name))
-pl.savefig(fig3_file_name, bbox_inches='tight')
-
-#fig4_file_name = os.path.join(options.temp_dir, 'pic4.png')
-#logging.info("Preparing '%s'" % (fig4_file_name))
-#plt.close()
-#plt.plot(a[0][2000:3000],a[1][2000:3000])
-#plt.ylabel('Intensity')
-#logging.info("Saving '%s'" % (fig4_file_name))
-#pl.savefig(fig4_file_name, bbox_inches='tight')
 
 
 # Connect to DB
@@ -153,11 +130,10 @@ if len(matches) > 0:
     twitter_handle = match[1].decode('UTF-8') if match[1].decode('UTF-8').startswith('@') else match[0].decode('UTF-8') + ' school'
 logging.info("Twitter handle identified as '%s'" % twitter_handle)
 
-image_list = [fig1_file_name,
-              fig2_file_name,
-              fig3_file_name]
-if len(args) > 2:
-    image_list.append(args[2])
+image_list = [fig1_file_name]
+
+for i in range(2, len(args)):
+    image_list.append(args[i])
 
 logging.info("Image list before checks is : " + str(image_list))
 
