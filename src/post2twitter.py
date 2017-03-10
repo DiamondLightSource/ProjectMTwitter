@@ -16,6 +16,9 @@ parser.add_option("-c", "--credentials", dest="credential_dir",
 parser.add_option("-l", "--twitter_lookup", dest="twitter_lookup",
                   help="Directory containing credentials for twitter etc",
                   default="test_data/twitter_lookup.csv")
+parser.add_option("-e", "--experiment_count", dest="experiment_count",
+                  help="json_file containing the experimental count",
+                  default="/dls/tmp/pmt.json")
 
 (options, args) = parser.parse_args()
 
@@ -53,30 +56,6 @@ api = twitter.Api(consumer_key=creds['consumer_key'],
 
 logging.info("verifying credentials")
 logging.debug(api.VerifyCredentials())
-
-
-# Load data
-import numpy as np
-
-data_file_name = args[1]
-logging.info("loading data file '%s'" % (data_file_name))
-a = np.loadtxt(data_file_name, unpack=True)
-
-
-# Plot images to temp file
-import pylab as pl
-import matplotlib.pyplot as plt
-
-fig1_file_name = os.path.join(options.temp_dir, 'pic1.png')
-logging.info("Preparing '%s'" % (fig1_file_name))
-plt.close()
-plt.plot(a[0],a[1])
-#FIXME add school content to the plot image
-plt.title('Data from sample ...')
-plt.ylabel('Intensity')
-plt.xlabel(r'$2\theta$(degrees)')
-logging.info("Saving '%s'" % (fig1_file_name))
-pl.savefig(fig1_file_name, bbox_inches='tight')
 
 
 # Connect to DB
@@ -126,12 +105,60 @@ tl = genfromtxt(options.twitter_lookup, delimiter=',', dtype=None)
 
 names = [i[0].decode('UTF-8') for i in tl]
 matches = tl[[school.lower() in name.lower() for name in names]]
-twitter_handle = school + " School"
+school_name = school.strip()
+if not 'school' in school_name.lower():
+    school_name = school_name + " School"
+logging.debug("School name is '%s'" % (school_name))
+
+twitter_handle = school_name
 if len(matches) > 0:
-    match = matches[0]
-    twitter_handle = match[1].decode('UTF-8') if match[1].decode('UTF-8').startswith('@') else match[0].decode('UTF-8') + ' school'
+    match = matches[0][1].decode('UTF-8')
+    if match.startswith('@'):
+        twitter_handle = match
 logging.info("Twitter handle identified as '%s'" % twitter_handle)
 
+
+# Get the experiment count
+experiment_count = {'count':0} 
+try:        
+    with open(options.experiment_count) as count_data:
+        experiment_count = json.load(count_data)
+except:
+    pass
+
+experiment_count['count'] += 1
+
+with open(options.experiment_count, 'w') as count_data:
+    json.dump(experiment_count, count_data)
+
+experiment_number = experiment_count['count']
+logging.info("experiment_number is %i" % experiment_number)
+
+
+# Load data
+import numpy as np
+
+data_file_name = args[1]
+logging.info("loading data file '%s'" % (data_file_name))
+a = np.loadtxt(data_file_name, unpack=True)
+
+
+# Plot images to temp file
+import pylab as pl
+import matplotlib.pyplot as plt
+
+fig1_file_name = os.path.join(options.temp_dir, 'pic1.png')
+logging.info("Preparing '%s'" % (fig1_file_name))
+plt.close()
+plt.plot(a[0],a[1])
+plt.title('Experiment %i:Barcode %s for %s' % (experiment_number, barcode, school_name))
+plt.ylabel('Intensity')
+plt.xlabel(r'$2\theta$(degrees)')
+logging.info("Saving '%s'" % (fig1_file_name))
+pl.savefig(fig1_file_name, bbox_inches='tight')
+
+
+# Compile images to tweet
 image_list = [fig1_file_name]
 
 for i in range(2, len(args)):
@@ -142,12 +169,10 @@ logging.info("Image list before checks is : " + str(image_list))
 image_list = [file_name for file_name in image_list if os.path.exists(file_name)]
 logging.info("Image list after checks is : " + str(image_list))
 
-#FIXME make this a json stored incrementing value
-experiment_count = 23 
 
 # Post the update to twitter
 logging.info("Posting update to twitter")
-status = api.PostUpdate('Experiment %i completed for %s_test as part of @DLSProjectM_test on the #I11 beamline @DiamondLightSou_test' % (experiment_count, twitter_handle),
+status = api.PostUpdate('Experiment %i completed for %s_test as part of @DLSProjectM_test on the #I11 beamline @DiamondLightSou_test' % (experiment_count['count'], twitter_handle),
                         media=image_list)
 
 
