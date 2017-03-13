@@ -2,4 +2,5 @@ python-twitter
 numpy
 matplotlib
 pillow
+click
 https://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-2.0.4.tar.gz
