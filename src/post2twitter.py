@@ -18,7 +18,7 @@ parser.add_option("-l", "--twitter_lookup", dest="twitter_lookup",
                   default="test_data/twitter_lookup.csv")
 parser.add_option("-e", "--experiment_count", dest="experiment_count",
                   help="json_file containing the experimental count",
-                  default="/dls/tmp/pmt.json")
+                  default="/dls/tmp/pmt3.json")
 
 (options, args) = parser.parse_args()
 
@@ -27,12 +27,15 @@ parser.add_option("-e", "--experiment_count", dest="experiment_count",
 import logging
 import logging.handlers as handlers
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 syslog = handlers.SysLogHandler(address=(options.syslog, options.syslog_port))
 syslog.setFormatter(logging.Formatter('ProjectMTwitter:%(message)s'))
 syslog.setLevel(logging.DEBUG)
 logging.getLogger('').addHandler(syslog)
 logging.info("Completed syslog setup")
+logging.getLogger('requests_oauthlib').setLevel(logging.INFO)
+logging.getLogger('requests').setLevel(logging.INFO)
+logging.getLogger('oauthlib').setLevel(logging.INFO)
 
 
 # Sort out twitter credentials
@@ -59,44 +62,44 @@ logging.debug(api.VerifyCredentials())
 
 
 # Connect to DB
-logging.info("Connecting to ISPyB")
-import mysql.connector
+# logging.info("Connecting to ISPyB")
+# import mysql.connector
 
-conn = mysql.connector.connect(user=creds['ispyb_user'], 
-                               password=creds['ispyb_pw'], 
-                               host=creds['ispyb_host'], 
-                               database=creds['ispyb_db'], 
-                               port=int(creds['ispyb_port']))
+# conn = mysql.connector.connect(user=creds['ispyb_user'],
+#                                password=creds['ispyb_pw'],
+#                                host=creds['ispyb_host'],
+#                                database=creds['ispyb_db'],
+#                                port=int(creds['ispyb_port']))
 
-if conn is not None:
-    conn.autocommit=True
+# if conn is not None:
+#     conn.autocommit=True
 
-cursor = conn.cursor(dictionary=True, buffered=True)
+# cursor = conn.cursor(dictionary=True, buffered=True)
 
-# Retrieve the school name for the given sample barcode
-barcode = args[0]
-query = """SELECT lab.name 
-FROM Laboratory lab 
-  INNER JOIN Person p on p.laboratoryId = lab.laboratoryId
-  INNER JOIN LabContact lc on lc.personId = p.personId
-  INNER JOIN Shipping s on s.returnLabContactId = lc.labContactId
-  INNER JOIN Dewar d on d.shippingId = s.shippingId
-  INNER JOIN Container c on c.dewarId = d.dewarId
-  INNER JOIN BLSample bls on bls.containerId = c.containerId
-WHERE
-  bls.name = %s""" % (barcode)
+# # Retrieve the school name for the given sample barcode
+# barcode = args[0]
+# query = """SELECT lab.name
+# FROM Laboratory lab
+#   INNER JOIN Person p on p.laboratoryId = lab.laboratoryId
+#   INNER JOIN LabContact lc on lc.personId = p.personId
+#   INNER JOIN Shipping s on s.returnLabContactId = lc.labContactId
+#   INNER JOIN Dewar d on d.shippingId = s.shippingId
+#   INNER JOIN Container c on c.dewarId = d.dewarId
+#   INNER JOIN BLSample bls on bls.containerId = c.containerId
+# WHERE
+#   bls.name = %s""" % (barcode)
 
-cursor.execute(query)
+# cursor.execute(query)
 
-rs = cursor.fetchone()
-if len(rs) == 0:
-    logging.warn("Couldn't find a school for sample barcode %s" % barcode)
+# rs = cursor.fetchone()
+# if len(rs) == 0:
+#     logging.warn("Couldn't find a school for sample barcode %s" % barcode)
 
-school = rs['name']
-logging.info("School identified as '%s'" % school)
-cursor.close()
-conn.close()
-
+# school = rs['name']
+# logging.info("School identified as '%s'" % school)
+# cursor.close()
+# conn.close()
+school = args[0]
 
 # Look-up the twitter handle for the school 
 from numpy import genfromtxt
@@ -151,7 +154,7 @@ fig1_file_name = os.path.join(options.temp_dir, 'pic1.png')
 logging.info("Preparing '%s'" % (fig1_file_name))
 plt.close()
 plt.plot(a[0],a[1])
-plt.title('Experiment %i:Barcode %s for %s' % (experiment_number, barcode, school_name))
+plt.title('Experiment %i: for %s' % (experiment_number, school_name))
 plt.ylabel('Intensity')
 plt.xlabel(r'$2\theta$(degrees)')
 logging.info("Saving '%s'" % (fig1_file_name))
