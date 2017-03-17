@@ -18,7 +18,7 @@ parser.add_option("-l", "--twitter_lookup", dest="twitter_lookup",
                   default="test_data/twitter_lookup.csv")
 parser.add_option("-e", "--experiment_count", dest="experiment_count",
                   help="json_file containing the experimental count",
-                  default="/dls/tmp/pmt3.json")
+                  default="/dls/tmp/pmt4.json")
 
 (options, args) = parser.parse_args()
 
@@ -109,19 +109,18 @@ tl = genfromtxt(options.twitter_lookup, delimiter=',', dtype=None)
 names = [i[0].decode('UTF-8') for i in tl]
 matches = tl[[school.lower() in name.lower() for name in names]]
 school_name = school.strip()
-if not 'school' in school_name.lower():
-    school_name = school_name + " School"
 logging.debug("School name is '%s'" % (school_name))
 
 twitter_handle = school_name
 if len(matches) > 0:
     match = matches[0][1].decode('UTF-8')
-    if match.startswith('@'):
-        twitter_handle = match
+    twitter_handle = match
 logging.info("Twitter handle identified as '%s'" % twitter_handle)
 
 
 # Get the experiment count
+import os, stat
+
 experiment_count = {'count':0} 
 try:        
     with open(options.experiment_count) as count_data:
@@ -133,6 +132,9 @@ experiment_count['count'] += 1
 
 with open(options.experiment_count, 'w') as count_data:
     json.dump(experiment_count, count_data)
+
+# make sure the file is writable to the next user
+os.chmod(options.experiment_count, stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU)
 
 experiment_number = experiment_count['count']
 logging.info("experiment_number is %i" % experiment_number)
