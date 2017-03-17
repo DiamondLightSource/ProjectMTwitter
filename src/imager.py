@@ -10,6 +10,7 @@ import io
 import sys
 import smtplib
 from email.mime.text import MIMEText
+import time
 
 
 def email(addr):
@@ -39,7 +40,8 @@ def take_image(host, out_file):
 @click.argument('camera')
 @click.argument('target')
 @click.option('--email', 'addr', help='If provided, errors will be emailed to the given address')
-def cli(camera, target, addr=None):
+@click.option('--delay', 'delay', type=int, default=0, help='Wait before taking the image')
+def cli(camera, target, addr=None, delay=0):
     """Save frame of CAMERA stream to TARGET
 
     \b
@@ -47,6 +49,7 @@ def cli(camera, target, addr=None):
     TARGET - Full file path for where to write the file
     """
     try:
+        time.sleep(delay)
         take_image(camera, target)
     except Exception as e:
         if addr:
