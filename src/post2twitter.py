@@ -18,7 +18,7 @@ parser.add_option("-l", "--twitter_lookup", dest="twitter_lookup",
                   default="test_data/twitter_lookup.csv")
 parser.add_option("-e", "--experiment_count", dest="experiment_count",
                   help="json_file containing the experimental count",
-                  default="/dls/tmp/pmt4.json")
+                  default="/dls/tmp/count.json")
 
 (options, args) = parser.parse_args()
 
@@ -134,7 +134,11 @@ with open(options.experiment_count, 'w') as count_data:
     json.dump(experiment_count, count_data)
 
 # make sure the file is writable to the next user
-os.chmod(options.experiment_count, stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU)
+try:
+    os.chmod(options.experiment_count, stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU)
+except:
+    # if we dont own it then this cant happen so not an issue.
+    pass
 
 experiment_number = experiment_count['count']
 logging.info("experiment_number is %i" % experiment_number)
