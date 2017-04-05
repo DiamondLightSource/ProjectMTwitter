@@ -7,6 +7,7 @@ import click
 from PIL import Image
 import json
 import io
+import os
 import sys
 import smtplib
 from email.mime.text import MIMEText
@@ -32,11 +33,13 @@ def take_image(host, out_file, thumbnail=False):
         r.close()
     header, ctype, clength, _, data = data.split(b'\r\n', 4)
     length = int(clength.split(b':')[1])
+    fname, ext = os.path.splitext(out_file)
     with io.BytesIO(data[:length]) as bdat:
         with Image.open(bdat) as out_fh:
+            out_fh.save(fname + ext)
             if thumbnail:
                 out_fh.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
-            out_fh.save(out_file)
+                out_fh.save(fname+'t'+ext)
 
 
 @click.command(name='imager')
@@ -54,7 +57,7 @@ def cli(camera, target, addr=None, delay=0, thumbnail=False):
     """
     try:
         time.sleep(delay)
-        take_image(camera, target, thumbnail)
+        take_image(camera, target, thumbnail=thumbnail)
     except Exception as e:
         if addr:
             email(addr)
