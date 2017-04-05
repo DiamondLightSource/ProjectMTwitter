@@ -12,6 +12,7 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 
+THUMBNAIL_SIZE = (320,320)
 
 def email(addr):
     msg = MIMEText(f'{sys.argv}\n\n{traceback.format_exc(10)}')
@@ -23,7 +24,7 @@ def email(addr):
     s.quit()
 
 
-def take_image(host, out_file):
+def take_image(host, out_file, thumbnail=False):
     r = requests.get(host, stream=True)
     try:
         data = next(r.iter_content(100000))
@@ -33,6 +34,8 @@ def take_image(host, out_file):
     length = int(clength.split(b':')[1])
     with io.BytesIO(data[:length]) as bdat:
         with Image.open(bdat) as out_fh:
+            if thumbnail:
+                out_fh.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
             out_fh.save(out_file)
 
 
@@ -41,7 +44,8 @@ def take_image(host, out_file):
 @click.argument('target')
 @click.option('--email', 'addr', help='If provided, errors will be emailed to the given address')
 @click.option('--delay', 'delay', type=int, default=0, help='Wait before taking the image')
-def cli(camera, target, addr=None, delay=0):
+@click.option('-t', '--thumbnail', is_flag=True)
+def cli(camera, target, addr=None, delay=0, thumbnail=False):
     """Save frame of CAMERA stream to TARGET
 
     \b
@@ -50,7 +54,7 @@ def cli(camera, target, addr=None, delay=0):
     """
     try:
         time.sleep(delay)
-        take_image(camera, target)
+        take_image(camera, target, thumbnail)
     except Exception as e:
         if addr:
             email(addr)
