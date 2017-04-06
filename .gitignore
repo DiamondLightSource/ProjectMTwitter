@@ -9,7 +9,11 @@ __pycache__/
 # twitter credentials
 credentials.json
 
-# gedit 
+# vim swp files
+.*swp
+.*swo
+
+# gedit
 *~
 
 # Distribution / packaging
