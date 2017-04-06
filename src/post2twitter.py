@@ -17,8 +17,8 @@ parser.add_option("-l", "--twitter_lookup", dest="twitter_lookup",
                   help="Directory containing credentials for twitter etc",
                   default="test_data/twitter_lookup.csv")
 parser.add_option("-e", "--experiment_count", dest="experiment_count",
-                  help="json_file containing the experimental count",
-                  default="/dls/tmp/count.json")
+                  help="The experiment number",
+                  default=7777)
 
 (options, args) = parser.parse_args()
 
@@ -118,29 +118,29 @@ if len(matches) > 0:
 logging.info("Twitter handle identified as '%s'" % twitter_handle)
 
 
-# Get the experiment count
-import os, stat
+## Get the experiment count
+#import os, stat
+#
+#experiment_count = {'count':0} 
+#try:        
+#    with open(options.experiment_count) as count_data:
+#        experiment_count = json.load(count_data)
+#except:
+#    pass
+#
+#experiment_count['count'] += 1
+#
+#with open(options.experiment_count, 'w') as count_data:
+#    json.dump(experiment_count, count_data)
+#
+## make sure the file is writable to the next user
+#try:
+#    os.chmod(options.experiment_count, stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU)
+#except:
+#    # if we dont own it then this cant happen so not an issue.
+#    pass
 
-experiment_count = {'count':0} 
-try:        
-    with open(options.experiment_count) as count_data:
-        experiment_count = json.load(count_data)
-except:
-    pass
-
-experiment_count['count'] += 1
-
-with open(options.experiment_count, 'w') as count_data:
-    json.dump(experiment_count, count_data)
-
-# make sure the file is writable to the next user
-try:
-    os.chmod(options.experiment_count, stat.S_IRWXO | stat.S_IRWXG | stat.S_IRWXU)
-except:
-    # if we dont own it then this cant happen so not an issue.
-    pass
-
-experiment_number = experiment_count['count']
+experiment_number = int(options.experiment_count)  # experiment_count['count']
 logging.info("experiment_number is %i" % experiment_number)
 
 
@@ -181,7 +181,7 @@ logging.info("Image list after checks is : " + str(image_list))
 
 # Post the update to twitter
 logging.info("Posting update to twitter")
-status = api.PostUpdate('Experiment %i completed for %s_test as part of @DLSProjectM_test on the #I11 beamline @DiamondLightSou_test' % (experiment_count['count'], twitter_handle),
+status = api.PostUpdate('Experiment %i completed for %s_test as part of @DLSProjectM_test on the #I11 beamline @DiamondLightSou_test' % (experiment_number, twitter_handle),
                         media=image_list)
 
 
