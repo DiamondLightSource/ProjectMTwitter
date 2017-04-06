@@ -46,7 +46,7 @@ def take_image(host, out_file, thumbnail=False):
 @click.argument('camera')
 @click.argument('target')
 @click.option('--email', 'addr', help='If provided, errors will be emailed to the given address')
-@click.option('--delay', 'delay', type=int, default=0, help='Wait before taking the image')
+@click.option('--delay', 'delay', type=float, default=0.0, help='Wait before taking the image')
 @click.option('-t', '--thumbnail', is_flag=True)
 def cli(camera, target, addr=None, delay=0, thumbnail=False):
     """Save frame of CAMERA stream to TARGET
