@@ -28,7 +28,7 @@ def email(addr):
 def take_image(host, out_file, thumbnail=False):
     r = requests.get(host, stream=True)
     try:
-        data = next(r.iter_content(100000))
+        data = next(r.iter_content(200000))
     finally:
         r.close()
     header, ctype, clength, _, data = data.split(b'\r\n', 4)
