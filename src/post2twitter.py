@@ -181,9 +181,9 @@ logging.info("Image list after checks is : " + str(image_list))
 
 # Post the update to twitter
 logging.info("Posting update to twitter")
-post_string = 'Experiment %i completed for %s_test as part of @DLSProjectM_test on the #I11 beamline @DiamondLightSou_test' 
+post_string = 'Experiment %i completed for %s as part of @DLSProjectM on the #I11 beamline @DiamondLightSou' 
 if "Ysgol Glan Clwyd" in school:
-    post_string = 'Arbrawf %i cwblhau ar gyfer %s_test fel rhan o @DLSProjectM_test ar y beamline #I11 @DiamondLightSou_test'
+    post_string = 'Arbrawf %i cwblhau ar gyfer %s fel rhan o @DLSProjectM ar y beamline #I11 @DiamondLightSou'
 
 status = api.PostUpdate(post_string % (experiment_number, twitter_handle),
                         media=image_list)
